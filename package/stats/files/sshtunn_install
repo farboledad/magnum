@@ -1,0 +1,79 @@
+#!/bin/sh
+# Install script for sshtunn
+
+echo "Setting sshtunn defaults"
+
+echo "Updating init scripts"
+
+cp /rom/mnt/cust/etc/init.d/sshtunn /etc/init.d/
+cp /rom/mnt/cust/etc/init.d/autossh /etc/init.d/
+
+echo "Copying other autossh files"
+cp -r /rom/mnt/cust/etc/hotplug.d /etc/
+cp -r /rom/mnt/cust/etc/config /etc/
+
+echo "Updating rc.common"
+cp /rom/mnt/cust/etc/rc.common /etc/
+
+echo "Creating sshtunn folder under etc"
+[ -d /etc/sshtunn ] || {
+        mkdir /etc/sshtunn
+}
+
+echo "Setting sshtunnel defaults"       
+ucichange=0
+
+grep "sshtunnel_config" /etc/config/sshtunnel > /dev/null || {
+        echo Creating sshtunnel_config...
+        uci set sshtunnel.sshtunnel_config=sshtunnel          
+        ucichange=1
+}
+
+grep "user" /etc/config/sshtunnel > /dev/null || {
+        echo Creating user...
+        uci set sshtunnel.sshtunnel_config.user=empty
+        ucichange=1
+}
+
+grep "serIP" /etc/config/sshtunnel > /dev/null || {
+        echo Creating serIP...
+        uci set sshtunnel.sshtunnel_config.serIP=empty
+        ucichange=1
+}
+
+grep "serPort" /etc/config/sshtunnel > /dev/null || {
+        echo Creating serPort...
+        uci set sshtunnel.sshtunnel_config.serPort=empty     
+        ucichange=1
+}
+
+grep "monPort" /etc/config/sshtunnel > /dev/null || {
+        echo Creating monPort...
+        uci set sshtunnel.sshtunnel_config.monPort=empty
+        ucichange=1
+}
+
+grep "start" /etc/config/sshtunnel > /dev/null || {
+        echo Creating start...
+        uci set sshtunnel.sshtunnel_config.start=false
+	ucichange=1
+}
+
+if [ "$ucichange" == 1 ]
+then
+        echo Applying changes to sshtunnel...                 
+        uci commit sshtunnel
+fi
+
+echo "Setting dropbear defaults"
+grep "GatewayPorts" /etc/config/dropbear > /dev/null || {
+        echo  "Creating GatewayPorts on Dropbear..."
+        uci set dropbear.default.GatewayPorts=on
+        uci commit dropbear
+        /etc/init.d/dropbear restart
+}
+
+#Enabling Root access on SSH
+/rom/mnt/cust/bin/root_enabler
+
+/etc/init.d/sshtunn restart

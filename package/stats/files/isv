@@ -1,0 +1,14 @@
+#!/bin/sh
+# isv script for bundle image sshtunn, LuvitRED2 and Stats
+
+sleep 5
+
+#Installing sshtunn#
+./etc/sshtunn_install
+export AUTOSSH_PATH=/rom/mnt/cust/bin/wrapper #Changing the path to ssh for autossh to get the -y option
+#Installing stats#
+./etc/stats_install
+#Installing LuvitRED2#
+./etc/luvitred2_install
+
+./loader | while read line; do echo "$(date +%d/%m/%Y-%H:%M:%S): ${line}"; done | tee /etc/stats.log

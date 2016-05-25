@@ -1,0 +1,7 @@
+echo Updating luvitred2...
+cd luvitred2
+git pull origin master
+echo Updating red2_packages...
+cd ../red2_packages
+git pull origin master
+cd ..

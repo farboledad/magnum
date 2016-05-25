@@ -1,0 +1,35 @@
+#!/bin/sh 
+# vnstati image generation script.
+# Source: http://code.google.com/p/x-wrt/source/browse/trunk/package/webif/files/www/cgi-bin/webif/graphs-vnstat.sh
+ 
+WWW_D=/tmp/www/vnstat # output images to here
+BCK_D=/tmp/statistics # output dumps to here
+BIN=/usr/bin/vnstati  # which vnstati
+BIN_S=/usr/bin/vnstat # which vnstat
+ 
+outputs="s h d t m"   # what images to generate
+ 
+# Sanity checks
+[ -d "$WWW_D" ] || mkdir -p "$WWW_D" # make the folder if it dont exist.
+
+rm -rf /tmp/www/vnstat/vnstat_*
+
+for output in $outputs; do
+	$BIN -${output} -i ${1} -o $WWW_D/vnstat_${output}_${2}.png
+done
+
+rm -rf /www/statsimages/vnstat_*
+ln -s /tmp/www/vnstat/vnstat_* /www/statsimages/.
+
+#Dumping DBs
+
+cat /etc/config/vnstat | grep list | sed "s/\(\\t\|list\|interface\| \|'\)//g" > /tmp/exit.txt
+
+while read interface
+do
+	$BIN_S -i ${interface} --dumpdb > $BCK_D/vnstat_${interface}_dumped.txt
+	
+done</tmp/exit.txt
+`rm -rf /tmp/exit.txt`
+
+exit 1

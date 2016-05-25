@@ -1,0 +1,20 @@
+#!/bin/sh
+# Script to backup data from vnstat and darkstat to flash /etc/statistics
+BCK_DIR="/etc/statistics"
+CURR_DIR="/tmp/statistics"
+DUMMY_INT="eth0"
+
+echo "STATS: Time for Backup!!"
+
+/rom/mnt/cust/etc/vnstatigenerate "$DUMMY_INT" 01234567890
+/rom/mnt/cust/etc/darkstatgenerate "$DUMMY_INT"
+
+rm -rf $BCK_DIR/*_hosts_*.txt		
+cp -r $CURR_DIR/* $BCK_DIR
+rm -rf $BCK_DIR/hosts.txt
+rm -rf $BCK_DIR/darkstat/*.csv
+rm -rf $BCK_DIR/download.tar.gz
+rm -rf $BCK_DIR/*.csv
+
+date=`/bin/date -I`
+for file in ${BCK_DIR}/hosts_*.txt; do mv $file ${file//hosts/${date}_hosts}; done

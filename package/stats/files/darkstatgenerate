@@ -1,0 +1,53 @@
+#!/bin/sh
+FILE_D="/tmp/statistics"
+MAX_HOSTS=5
+
+#Dumping DBs
+
+cat /etc/config/vnstat | grep list | sed "s/\(\\t\|list\|interface\| \|'\)//g" > /tmp/exit1.txt
+
+while read interface
+do
+	if [ "$interface" = "eth0" ]; then port=667
+	elif [ "$interface" = "usb0" ]; then port=668
+	elif [ "$interface" = "eth1" ]; then port=669
+	elif [ "$interface" = "mlan0" ]; then port=670
+	elif [ "$interface" = "uap0" ]; then port=671
+	elif [ "$interface" = "uap1" ]; then port=672
+	elif [ "$interface" = "wwan0" ]; then port=673
+	fi
+
+	count=0
+	
+	curl -s 127.0.0.1:$port/hosts/ | grep -A 6 \<td\>\<a > /tmp/exit.txt
+	echo -- >> /tmp/exit.txt
+	`rm -rf "$FILE_D/hosts_${interface}.txt" && touch "$FILE_D/hosts_${interface}.txt"`
+	host=""
+	run=`curl -s 127.0.0.1:$port | grep Running\ for | sed 's/\(<b>\|<\/b>\|<span\ id="rf">\|<\/span>\|<br>\)//g'`
+	run="$(echo "$run" | sed 's/ /;/g')"
+	echo $run > "$FILE_D/hosts_${interface}.txt"
+	while read line
+	do
+		if [ "$count" -lt "$MAX_HOSTS" ]
+                then
+		       	line="$(echo "$line" | sed 's/\(<td>\|<\/td>\|<td class="num">\|<tt>\|<\/tt>\|<a href=".*">\|<\/a>\|<\/tr>\| \)//g')"
+       			if [ "$line" = "--" ]
+        		then
+				count=$((count+1))
+               			host="$(echo "$host"|sed 's/;//')"
+	                	echo "$host" >> "$FILE_D/hosts_${interface}.txt"
+        	       		host=""
+       			else
+	                	if [ "$line" = "" ]
+        	       		then
+       	        	        	line="unknown"
+                		fi
+	               		host=$host';'$line
+       			fi
+		fi
+	done</tmp/exit.txt
+	rm -rf /tmp/exit.txt
+done</tmp/exit1.txt
+rm -rf /tmp/exit1.txt
+
+`cp "$FILE_D/hosts_${1}.txt" "$FILE_D/hosts.txt"`

@@ -1,0 +1,6 @@
+echo "Patch for GD..."
+rm -rf build_dir/target-arm_v5te_uClibc-0.9.33.2_eabi/gd-2.0.35/libtool
+cd build_dir/target-arm_v5te_uClibc-0.9.33.2_eabi/gd-2.0.35/
+ln -s ../../../staging_dir/host/bin/libtool libtool
+cd ../../../
+cp gd_makefile build_dir/target-arm_v5te_uClibc-0.9.33.2_eabi/gd-2.0.35/Makefile

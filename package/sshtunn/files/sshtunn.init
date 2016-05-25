@@ -1,0 +1,45 @@
+#!/bin/sh /etc/rc.common
+        
+reload()
+{
+	rm -rf /etc/sshtunn/sshtunn.config
+
+	touch /etc/sshtunn/sshtunn.config
+
+	config_load sshtunnel
+	
+	config_get user sshtunnel_config user
+	config_get serIP sshtunnel_config serIP
+	config_get serPort sshtunnel_config serPort
+	config_get monPort sshtunnel_config monPort
+	config_get start sshtunnel_config start
+	echo "user: $user serIP: $serIP serPort: $serPort monPort: $monPort start: $start"
+	echo $user:$serIP:$serPort:$monPort:$start > /etc/sshtunn/sshtunn.config	
+}
+start()
+{
+	reload
+	if [ "$start" == true ]
+	then
+		echo "We are going to start the tunnel"
+		uci set autossh.@autossh[0].ssh="-f -N -R $serPort:localhost:22 $user@$serIP -i /etc/dropbear/dropbear_rsa_host_key"
+		uci set autossh.@autossh[0].monitorport="$monPort"
+		uci commit autossh
+		/etc/init.d/autossh stop
+		#tunnel will start from isv
+	else
+		echo "Tunnel should be down"
+		/etc/init.d/autossh stop
+	fi
+}
+
+stop()
+{
+	rm -rf /etc/sshtunn/sshtunn.config
+}
+
+restart()
+{
+	stop
+	start
+}

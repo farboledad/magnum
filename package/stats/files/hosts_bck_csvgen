@@ -1,0 +1,17 @@
+#!/bin/sh
+INTERFACE="$1"
+FILES="/tmp/statistics/darkstat/files.txt"
+`rm -rf /tmp/statistics/darkstat/*.csv`
+
+while read line
+do
+        #echo "$line"
+        if [ -n "${line##*Current*}" ]
+        then
+                readfilename="$line"_hosts_"$INTERFACE".txt
+                writefilename="$(echo "$readfilename"| sed 's/.txt/.csv/g')"
+                readfilename="/etc/statistics/darkstat/"$readfilename
+                writefilename="/tmp/statistics/darkstat/"$writefilename
+        	/rom/mnt/cust/etc/hosts_csvgen "$readfilename" "$writefilename"
+	fi
+done<"$FILES"

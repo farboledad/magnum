@@ -1,0 +1,50 @@
+from SDK_ROOT/package #Part for LuvitRED - always check for new dependencies
+---------------------
+rm -rf ./dallas-sdk
+ln -s ../../magnum/red2_packages/libuv .
+ln -s ../../magnum/red2_packages/libarchive .
+ln -s ../../magnum/red2_packages/dallas-sdk .
+ln -s ../../magnum/red2_packages/luvit-red .
+ln -s ../../magnum/red2_packages/luajit .
+ln -s ../../magnum/red2_packages/luvit-startup .
+ln -s ../../magnum/red2_packages/qpid-proton .
+ln -s ../../magnum/red2_packages/luv .
+ln -s ../../magnum/red2_packages/leveldb .
+ln -s ../../magnum/red2_packages/libtelnet .
+ln -s ../../magnum/red2_packages/luvi .
+ln -s ../../magnum/red2_packages/expat .
+ln -s ../../magnum/red2_packages/net-snmp .
+ln -s ../../magnum/red2_packages/snmpconfig .
+ln -s ../../magnum/red2_packages/argp-standalone .
+ln -s ../../magnum/red2_packages/eibd .
+ln -s ../../magnum/red2_packages/pthsem .
+
+#All the rest of the installation needs to be followed as explained on the red2_packages README file
+
+from SDK_ROOT/package
+---------------------
+ln -s ../../magnum/package/autossh .
+ln -s ../../magnum/package/darkstat .
+ln -s ../../magnum/package/gd .
+ln -s ../../magnum/package/jansson .
+ln -s ../../magnum/package/jpeg .
+ln -s ../../magnum/package/libpng .
+ln -s ../../magnum/package/root_enabler .
+ln -s ../../magnum/package/sshtunn .
+ln -s ../../magnum/package/vnstat .
+ln -s ../../magnum/package/stats .
+
+from MAGNUM
+-----------
+cp config/config/* ../sdk/config/config
+
+from SDK_ROOT
+-------------
+ln -s ../magnum/gd_* .
+cp ../magnum/libtool_patch ./staging_dir/host/bin/libtool
+
+IMPORTANT
+---------
+-Add the absolute path to the luvitred2 folder under the Developers submenu on Base system> luvit-red> Configuration
+-Change the ISV file version to "other ISV" under Base system> luvit-startup> Configuration. This option only exists after replacing the Config.in and Makefile of the luvit-startup folder under the red2_packages folder.
+-When compiling using make clean, the developer needs to patch gd by executing the ./gd_patch from the SDK_ROOT. A command that is helpful is: make clean && make || ./gd_patch && make

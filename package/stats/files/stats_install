@@ -1,0 +1,33 @@
+#!/bin/sh
+#Installation script for stats
+BCK_DIR="/etc/statistics"
+CURR_DIR="/tmp/statistics/"
+
+ln -sf /rom/mnt/cust/etc/init.d/vnstat /etc/init.d/vnstat
+ln -sf /rom/mnt/cust/etc/init.d/darkstat /etc/init.d/darkstat
+cp /rom/mnt/cust/etc/config/vnstat /etc/config/vnstat
+/rom/mnt/cust/etc/uci-defaults/vnstat
+cp /rom/mnt/cust/etc/config/darkstat /etc/config/darkstat
+ln -sf /rom/mnt/cust/etc/vnstat.conf /etc/vnstat.conf
+ln -sf /rom/mnt/cust/usr/bin/vnstat /usr/bin/vnstat
+ln -sf /rom/mnt/cust/usr/bin/vnstati /usr/bin/vnstati
+ln -sf /rom/mnt/cust/usr/sbin/vnstatd /usr/sbin/vnstatd
+ln -sf /rom/mnt/cust/usr/sbin/darkstat /usr/sbin/darkstat
+mkdir -p /www/statsimages
+ln -sf /rom/mnt/cust/www/stats/images/no_data_graph.jpg /www/statsimages/.
+mkdir -p /tmp/statistics/darkstat
+mkdir -p /tmp/statistics/vnstat
+ln -sf /tmp/statistics /www/statistics 
+
+if [ -d "$BCK_DIR" ]
+then
+	echo "BCK dir exists!"
+else
+	mkdir -p ${BCK_DIR}/darkstat
+fi
+
+`ifconfig|grep -o 'addr:.*\  B'|sed 's/\(addr:\| \|B\)//g' > /tmp/nets.txt`
+
+/etc/init.d/vnstat enable
+/etc/init.d/vnstat restart
+/etc/init.d/darkstat restart

@@ -1,0 +1,16 @@
+#!/bin/sh
+HOST_FILE="$1"
+CSV_FILE="$2"
+HEADER='IP\tHostname\tMAC\tDL\tUL\tTotal\tLastSeen'
+`rm -rf "$CSV_FILE" && touch "$CSV_FILE"`
+
+while read line
+do
+	line="$(echo "$line" | sed 's/;/\t/g')"
+	#echo "$line"
+	echo "$line" >> "$CSV_FILE"
+	if [ -z "${line##*Running*}" ]
+        then
+                echo -e "$HEADER" >> "$CSV_FILE"
+        fi
+done<"$HOST_FILE"

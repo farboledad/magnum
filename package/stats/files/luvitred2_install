@@ -1,0 +1,16 @@
+#!/bin/sh
+#Installation script for LuvitRED2
+
+# disable core files. Safety if device previously had a debug build.
+rm /.init_enable_core &> /dev/null
+
+uci show luvitred > /dev/null 2>&1 || {
+        echo "Setting default luvitred config"
+        cp /rom/mnt/cust/luvit-red/luvitred.config /etc/config/luvitred
+}
+
+touch /etc/config/cg_conf_snmpd
+
+[ ! -f /etc/init.d/snmpd ] && {
+  ln -s /rom/mnt/cust/etc/init.d/snmpd /etc/init.d/snmpd
+}

@@ -1,0 +1,26 @@
+config board HD1371
+      option model "HD1371"
+      option description "LinkLabs Ensemble Board"
+      option slot_id "2"
+      option hwv "1"
+      option gpio_count "0"
+      option device_count "1"
+      option device_0 "ttybackUSB"
+      option sh_count "10"
+      option sh_0 "insmod /lib/modules/2.6.35.3/cp210x.ko"
+      option sh_1 "echo 73 > /sys/class/gpio/export"
+      option sh_2 "echo \"in\" > /sys/class/gpio/gpio73/direction"
+      option sh_3 "echo \"rising\" > /sys/class/gpio/gpio73/edge"
+      option sh_4 "echo 74 > /sys/class/gpio/export"
+      option sh_5 "echo \"out\" > /sys/class/gpio/gpio74/direction"
+      option sh_6 "echo \"1\" > /sys/class/gpio/gpio74/value"
+      option sh_7 "echo 72 > /sys/class/gpio/export"
+      option sh_8 "echo \"out\" > /sys/class/gpio/gpio72/direction"
+      option sh_9 "echo \"0\" > /sys/class/gpio/gpio72/value"
+
+config device 'ttybackUSB'
+      option name 'ttybackUSB'
+      option board_model 'HD1371'
+      option devicepath '/sys/devices/platform/fsl-ehci.0/usb2/2-1/2-1.2/2-1.2:1.0'
+      option devname 'ttybackUSB'
+      option dev_type 'serial'

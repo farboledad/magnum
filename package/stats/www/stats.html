@@ -1,0 +1,109 @@
+<script type="text/javascript" src="stats/js/stats.js"></script>
+<script type="text/javascript" src="/stats/js/jquery-ui.min.js"></script>
+<script type="text/javascript" src="/stats/js/Chart.min.js"></script>
+<link rel="stylesheet" href="/stats/css/jquery-ui.css" />
+<div ng-controller="statsCtrl">
+<mg-alert></mg-alert>
+	<form name="configForm" ng-submit="statsGenerate()" novalidate>
+	<div class="well form-horizontal">
+	<cg-section section-title="Interface selection">
+			<fieldset>
+					<legend>Interface selection</legend>
+					<table>
+						<tbody>
+						<tr><th>Interface: </th><td><select ng-model="stats.interface" class="input-small" ng-options="v for v in interfaces.values"></td>   
+						<td></td>                                                                                     <td><button type="submit" value="submit" class="btn btn-primary" >Refresh</button></td>                                              
+						<td></td>                                                                                      <td ng-hide="!donegenerating"><a href="statistics/download.tar.gz"><b>Download </b></a> data from selected interface</td>            
+     						</tr>
+						</tbody>
+					</table>
+					<br>
+					<table>
+						<tbody>
+						<tr>
+						<th><button type="button" value="reset" class="btn" ng-click="resetintstats()">Reset all interface statistics</button></th>
+						</tr>
+						</tbody>
+					</table>  
+			</fieldset>
+	</cg-section>
+	</div>
+	<div class="well form-horizontal">
+	<cg-section section-title="Interface statistics">
+			<fieldset>
+					<legend>{{stats.interface}} interface statistics</legend>
+					<div>
+					<table>
+                                                <tbody>
+							<tr>
+							<td>
+								<img ng-src="statsimages/{{stats.images[3]}}">
+							</td>
+							<td>
+								<img ng-src="statsimages/{{stats.images[1]}}">
+							</td>
+                                                	</tr>
+                                                	<tr>
+							<td align="top">
+								<img ng-src="statsimages/{{stats.images[0]}}">
+							</td>
+                                                	<td align="top">
+								<img ng-src="statsimages/{{stats.images[4]}}">
+                                                		</br>
+								<img ng-src="statsimages/{{stats.images[2]}}">
+                                                	</td>
+                                                	</tr>
+                                                </tbody>
+                                        </table>
+                                        </div>
+			</fieldset>
+	</cg-section>
+	</div>
+	<div class="well form-horizontal">
+	<cg-section section-title="Top 5 hosts">
+			<fieldset>
+					<legend>{{stats.interface}}: Top 5 hosts</legend>
+					<table>
+						<tbody>                                         
+                                                <tr>
+						<th>Select host file: </th><td><input type="text" mg-select class="input-medium" /></td>
+						<td><button type="button" value="reset" class="btn" ng-click="resethosts()">Reset all host statistics</button></td>
+                                                </tr>
+                                                </tbody> 
+					</table>
+					<br>
+					<table>
+						<tbody><tr><th>{{running.running}}</th></tr></tbody>
+					</table>
+					<br>
+					<table class="table table-striped table-condensed">
+                                                <thead>
+                                                        <tr>
+                                                                <th>IP address</th>
+								<th>Hostname</th>
+								<th>MAC address</th>
+								<th>Downlink</th>
+								<th>Uplink</th>
+								<th>Total</th>	
+							        <th>Last seen</th>
+                                                        </tr>
+                                                </thead>
+                                                <tbody>
+                                                        <tr ng-repeat="host in hosts">
+                                                                <td>{{host.ip}}</td>
+                                                                <td>{{host.hostname}}</td>
+								<td>{{host.mac}}</td>
+								<td>{{host.dl}}</td>
+								<td>{{host.ul}}</td>
+								<td>{{host.total}}</td>
+								<td>{{host.ls}}</td>
+                                                        <tr>
+                                                </tbody>
+                                        </table>
+					<br>
+					<div align="center"><canvas mg-chart ng-hide="!graphReady" width=700px height=350px></canvas></div>
+			</fieldset>
+	</cg-section>
+	</div>
+	</form>
+</div>

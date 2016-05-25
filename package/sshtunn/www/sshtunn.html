@@ -1,0 +1,53 @@
+<style>
+.strike {
+	text-decoration: line-through;
+}
+</style>
+<script type="text/javascript" src="sshtunn/js/sshtunn.js"></script>
+<div ng-controller="sshTunnCtrl">
+<mg-alert></mg-alert>
+	<form name="configForm" ng-submit="submitConfig()" novalidate>
+	<div class="well form-horizontal">
+	<cg-section section-title="SSH Tunnel Configuration">
+			<fieldset>
+					<legend>SSH Tunnel Configuration</legend>
+					<table>
+						<tbody>
+							<tr><th>Server username</th><td><input ng-model="tunnel.user" type="text" name="user" placeholder="user" required/></td></tr>
+							<tr><th>Server IP address</th><td><input ng-model="tunnel.serIP" type="text" name="URL" placeholder="Example: URL or IP" required/></td></tr>
+							<tr><th>Server Port number</th><td><input ng-model="tunnel.serPort" type="text" name="serPort" class="input-mini" placeholder="1" required/></td></tr>
+							<tr><th>Monitor Port number</th><td><input ng-model="tunnel.monPort" type="text" name="monPort" class="input-mini" placeholder="Port+1" readonly required/></td></tr>
+							<tr><th>Start the tunnel after saving</th><td><input type="checkbox" ng-model="tunnel.start" id="start" value="start"><br></td></tr>
+						</tbody>
+					</table>
+			<br>
+			<div class="alert alert-info">
+				<strong>Note 1: </strong>The port number should be free on the server side.
+			</div>
+			<div class="alert alert-info">
+				<strong>Note 2: </strong>The monitor port should also be free on the server side.
+			</div>
+			</fieldset>
+	</cg-section>
+	<div class="form-actions">
+                <button ng-disabled="!validate()" type="submit" value="submit" class="btn btn-primary" >Save changes</button>
+                <button ng-disabled="!tunnelModifiedValidate()" type="button" ng-click="onTunnelFormReset()" class="btn">Cancel</button>
+        </div>
+	</div>
+	<div class="well form-horizontal">
+	<cg-section section-title="SSH RSA Certificate">
+			<fieldset>
+					<legend>SSH RSA Certificate</legend>
+					<table>
+						<thead>
+							<th>Public Certificate:</th>
+						</thead>
+                                                <tbody>
+						<td><textarea style="width: 820px; height: 150px;" readonly>{{certificate}}</textarea></td>
+                                                </tbody>
+                                        </table>
+			</fieldset>
+	</cg-section>
+	</div>
+	</form>
+</div>

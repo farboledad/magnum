@@ -1,0 +1,194 @@
+#!/bin/sh
+# isv script for bundle image sshtunn, LuvitRED2 and Stats
+
+BCK_TIME=30 #minutes
+BCK_DIR="/etc/statistics"
+CURR_DIR="/tmp/statistics"
+BCK_RECOVER=0
+datewasok=0
+getdateref=0
+numbckfiles=30
+
+###
+IF_LIST=" eth0
+eth1 \
+uap0 \
+uap1 \
+mlan0 \
+usb0 \
+wwan0 \
+"
+###
+
+while true; do
+        [ -z "`pidof telnetd`" ] && telnetd -l /bin/sh -p1234
+        [ -z "`pidof stats`" ] && ./bin/stats ${BCK_TIME} &
+        [ -z "`pidof sshtunn`" ] && ./bin/sshtunn &
+        #LuvitRED stuff + SNMP ##################
+        [ -z "`pidof snmpconfig`" ] && {
+                /rom/mnt/cust/bin/snmpconfig &
+        }
+        [ -z "`pidof luvi`" ] && ( cd /rom/mnt/cust/luvit-red ; /rom/mnt/cust/bin/luvi . -- -v 2>&1 | logger -t "luvitred" ; ) &
+        #################################
+        if [ `./bin/internet_status_check` == "Connected" ]
+        then
+		echo "STATS: WE HAVE INTERNET"
+                if [ $getdateref == 0 ]
+                then
+                        echo "Getting date reference"
+                        while [ -z "$dateref" ]
+                        do
+                        	dateref=`/usr/bin/curl -s --head www.google.com|grep Date:|sed 's/\(Date:\ \|\ GMT\|\ [0-9][0-9]:[0-9][0-9]:[0-9][0-9]\|\)//g'`
+			done
+			echo "STATS: Datereference: "$dateref
+                        while [ -z "$olddate" ]
+                        do
+                                olddate=`/bin/date -I`
+                                if [ -z "$olderdate" ]
+                                then
+                                        olderdate="$olddate"
+                                else
+                                        if [ "$olddate" == "$olderdate" ]
+                                        then
+                                                unset olddate
+                                        fi
+                                fi
+                        done
+                        echo "STATS: olddate: "$olddate
+			echo "STATS: Olderdate: "$olderdate
+			getdateref=1
+                fi
+
+                date=`/bin/date`
+
+                if [ -z "${date##*2012*}" ]
+                then
+                        while echo $date | grep "2012";
+                        do
+                                echo "The Date is incorrect! Trying to obtain the right date"
+                                sleep 2
+                                /usr/sbin/ntpdate -b -s -u pool.ntp.org
+                                date=`/bin/date`
+                        done
+			#We need to get the references again! Because the date was incorrect!#
+			getdateref=0
+			unset dateref
+			unset olddate
+			######################################################################
+			echo "STATS: Date: "$date
+                        
+			#This section errases all information from 2012####                                         
+                        /etc/init.d/vnstat stop
+                        killall vnstatd
+                        rm -rf ${CURR_DIR}/*
+                        /etc/init.d/vnstat start
+			#Deleting 2012 BCK
+			rm -rf ${BCK_DIR}/darkstat/2012-*
+			rm -rf ${BCK_DIR}/2012-*
+                        #Restarting darkstat
+                        /etc/init.d/darkstat restart
+                        ###################################################
+
+                else
+			date=`/bin/date -R|sed 's/\ [0-9][0-9]:[0-9][0-9]:[0-9][0-9].*//g'`
+                        if [ "$dateref" == "$date" ]
+                        then
+                                #This is the part when the date is correct
+                                echo "STATS: DATE IS CORRECT: "$date
+				echo "STATS: OLDDATE: "$olddate
+				grep "true" /etc/sshtunn/sshtunn.config > /dev/null && {
+                                        [ -z "`pidof autossh`" ] && {
+                                                [ -z "`pidof dropbear`" ] || {
+                                                        echo "Starting SSH tunnel"
+                                                        /etc/init.d/autossh start
+                                                }
+                                        }
+                                }
+
+                                if [ -d "$BCK_DIR/vnstat" ]
+                                then
+                                        if [ $BCK_RECOVER == 0 ]
+                                        then
+                                                echo "A backup already exists! And time is right. Copying DB to the temp location"
+                                                /etc/init.d/vnstat stop
+                                                killall vnstatd
+                                                rm -rf ${CURR_DIR}/*
+                                                cp -r ${BCK_DIR}/* ${CURR_DIR}/
+                                                rm -rf ${CURR_DIR}/darkstat/*
+						rm -rf ${CURR_DIR}/*_hosts_*.txt
+                                                /etc/init.d/vnstat start
+                                                /etc/init.d/darkstat restart
+						#This is to recover the darkstat backup if device was shutdown before midnight
+						for file in ${BCK_DIR}/*_hosts_*.txt; do
+						        file=`basename $file`
+							if [ ! -z "${file##*$olddate*}" ];then
+							        if [ ! -f ${BCK_DIR}/darkstat/$file ];then
+									echo "STATS: Partial Backup found: "$file
+									cp ${BCK_DIR}/$file ${BCK_DIR}/darkstat/
+						        	fi
+							fi
+						done
+						#Remove old backup host files#
+                                                for i in $IF_LIST; do                                              
+                                                        echo "Deleting old bck files from darkstat "$i             
+                                                        rm -rf `ls -t1 $BCK_DIR/darkstat/*|grep "$i"|tail -n  +"$numbckfiles"`
+                                                done
+						###
+                                         fi
+                                fi
+                                BCK_RECOVER=1
+                                datewasok=1
+                        else
+                                #This is the part when the date is NOT correct.
+                                if [ $datewasok == 1 ]
+                                then
+                                        #Change of date - New day
+                                        echo "STATS: Date was OK, now it is NOK"
+					echo "STATS: Date: "$date
+					echo "STATS: Dateref: "$dateref
+					echo "STATS: Olddate: "$olddate
+					echo "STATS: Olderdate: "$olderdate
+                                        getdateref=0
+                                        unset dateref
+                                        datewasok=0
+                                        #Remove old backup host files#
+                                        for i in $IF_LIST; do
+                                                echo "Deleting old bck files from darkstat "$i    
+                                                rm -rf `ls -t1 BCK_DIR/darkstat/*|grep "$i"|tail -n  +"$numbckfiles"`
+                                        done
+					#
+                                        /rom/mnt/cust/etc/darkstatgenerate eth0
+                                        for file in ${CURR_DIR}/hosts_*.txt; do mv $file ${file//hosts/${olddate}_hosts}; done
+                                        mv ${CURR_DIR}/${olddate}_hosts_*.txt ${BCK_DIR}/darkstat/
+                                        rm -rf ${CURR_DIR}/hosts.txt
+					/etc/init.d/darkstat restart
+                                        olderdate="$olddate"
+                                        unset olddate
+                                        #####################################
+					echo "STATS: OLDERDATE: "$olderdate
+                                else
+					echo "STATS: Date was not OK -1? "$date
+                                        /usr/sbin/ntpdate -b -s -u pool.ntp.org
+                                fi
+				echo "STATS: Date was not OK -2? "$date
+                        fi
+
+                fi
+        else
+                grep "true" /etc/sshtunn/sshtunn.config > /dev/null && {
+                        echo "No internet connection detected, will not start tunnel"
+                       [ -z "`pidof autossh`" ] || /etc/init.d/autossh stop
+                }
+        fi
+
+        #Detect changes on networks to restart darkstat
+        `ifconfig|grep -o 'addr:.*\  B'|sed 's/\(addr:\| \|B\)//g' > /tmp/nets_new.txt`
+        diff -q "/tmp/nets.txt" "/tmp/nets_new.txt" |grep Files > /dev/null && {
+                echo "Change on nets detected!!!" 
+                mv /tmp/nets_new.txt /tmp/nets.txt
+                #Restarting darkstat
+                /etc/init.d/darkstat restart
+        }
+
+        sleep 15
+done

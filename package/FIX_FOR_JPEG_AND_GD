@@ -1,0 +1,54 @@
+Hey Franco,
+
+Part 2:
+Once it fails building ‘gd’, make the following changes
+-	Remove ‘build_dir/target-arm_v5te_uClibc-0.9.30.3_eabi/gd-2.0.35/libtool’ and link (or copy) the one from ‘staging_dir/host/bin/libtool’ (the same as what libjpeg almost did right , but for this package we cannot do this in the prepare step of the openwrt makefile since the autoconfig will remove it again)
+-	In the generated ‘makefile target../gd-…/Makefile’ change
+LIBICONV = @LIBICONV@
+to
+LIBICONV = 
+And
+LTLIBICONV = @LTLIBICONV@
+To
+LTLIBICONV = 
+
+That should do the trick to build libgd
+With these changes I am able to build vnstat.
+
+Regards
+
+PS: Quote from the openWRT wiki:
+Some/many packages that think autotools is a good idea end up needing "fixes" to work around autotools "accidentally" knowing better and using host tools instead of the build environment tools
+
+From: Tom Janssens 
+Sent: vrijdag 3 juli 2015 16:56
+To: Franco Arboleda Dall' Orto
+Cc: Axel Schollaert; Martin Croome
+Subject: RE: SDK libtool build issue
+
+Hey Franco,
+
+The full chain for vnstat still doesn’t compile, but I want to give you the pointer to get lipjpeg compiled.
+
+You do NOT want to use the libtool from “dummy” but  from staging/host/bin (you also do not need to copy anything)
+
+1)
+In ‘package/feeds/packages/jpeg/Makefile’ make the flowing change
+ln -s $(STAGING_DIR)/host/bin/libtool libtool; \
+to
+ln -s $(STAGING_DIR)/../host/bin/libtool libtool; \
+: it seems like an issue in the jpeg package makefile ? (maybe more recent openwrt versions have it install there ? )
+
+2)
+then in staging_dir/host/bin/libtool
+CC="i686-linux-gnu-gcc"
+to
+CC="arm-openwrt-linux-uclibcgnueabi-gcc"
+Ps: this is what will do the trick, but I don’t know the most elegant solution for it. I think it is a general issue in libtool, because it can find the correct command by itself, but not if you specifiy an –rpath entry …
+I found a post about this issue http://www.metastatic.org/text/libtool.html
+
+But then lib gd will fail … still need to figure out what is going on there
+
+Regards
+Tom
+
