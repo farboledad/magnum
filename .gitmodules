@@ -1,0 +1,6 @@
+[submodule "luvitred2"]
+	path = luvitred2
+	url = https://github.com/sousoux/luvitred2.git
+[submodule "red2_packages"]
+	path = red2_packages
+	url = https://github.com/sousoux/red2_packages.git
