@@ -34,14 +34,12 @@ ln -s ../../magnum/package/sshtunn .
 ln -s ../../magnum/package/vnstat .
 ln -s ../../magnum/package/stats .
 
-from MAGNUM
------------
-cp config/config/* ../sdk/config/config
 
 from SDK_ROOT
 -------------
+cp -v ../magnum/config/config/* config/config
 ln -s ../magnum/gd_* .
-cp ../magnum/libtool_patch ./staging_dir/host/bin/libtool
+cp -v ../magnum/libtool_patch ./staging_dir/host/bin/libtool
 
 IMPORTANT
 ---------
