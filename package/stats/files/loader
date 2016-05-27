@@ -21,7 +21,6 @@ wwan0 \
 ###
 
 while true; do
-        [ -z "`pidof telnetd`" ] && telnetd -l /bin/sh -p1234
         [ -z "`pidof stats`" ] && ./bin/stats ${BCK_TIME} &
         [ -z "`pidof sshtunn`" ] && ./bin/sshtunn &
         #LuvitRED stuff + SNMP ##################

