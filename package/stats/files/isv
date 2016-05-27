@@ -11,4 +11,7 @@ export AUTOSSH_PATH=/rom/mnt/cust/bin/wrapper #Changing the path to ssh for auto
 #Installing LuvitRED2#
 ./etc/luvitred2_install
 
-./loader | while read line; do echo "$(date +%d/%m/%Y-%H:%M:%S): ${line}"; done | tee /etc/stats.log
+while true; do
+        [ -z "`pidof loader`"] ./loader #| while read line; do echo "$(date +%d/%m/%Y-%H:%M:%S): ${line}"; done | tee /etc/stats.log
+	sleep 60
+done

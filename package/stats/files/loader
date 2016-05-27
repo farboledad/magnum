@@ -32,10 +32,10 @@ while true; do
         #################################
         if [ `./bin/internet_status_check` == "Connected" ]
         then
-		echo "STATS: WE HAVE INTERNET"
+		#echo "STATS: WE HAVE INTERNET"
                 if [ $getdateref == 0 ]
                 then
-                        echo "Getting date reference"
+                        echo "STATS: Getting date reference"
                         while [ -z "$dateref" ]
                         do
                         	dateref=`/usr/bin/curl -s --head www.google.com|grep Date:|sed 's/\(Date:\ \|\ GMT\|\ [0-9][0-9]:[0-9][0-9]:[0-9][0-9]\|\)//g'`
@@ -54,8 +54,8 @@ while true; do
                                         fi
                                 fi
                         done
-                        echo "STATS: olddate: "$olddate
-			echo "STATS: Olderdate: "$olderdate
+                        #echo "STATS: olddate: "$olddate
+			#echo "STATS: Olderdate: "$olderdate
 			getdateref=1
                 fi
 
@@ -94,12 +94,12 @@ while true; do
                         if [ "$dateref" == "$date" ]
                         then
                                 #This is the part when the date is correct
-                                echo "STATS: DATE IS CORRECT: "$date
-				echo "STATS: OLDDATE: "$olddate
+                                #echo "STATS: DATE IS CORRECT: "$date
+				#echo "STATS: OLDDATE: "$olddate
 				grep "true" /etc/sshtunn/sshtunn.config > /dev/null && {
                                         [ -z "`pidof autossh`" ] && {
                                                 [ -z "`pidof dropbear`" ] || {
-                                                        echo "Starting SSH tunnel"
+                                                        echo "SSHTunn: Starting SSH tunnel"
                                                         /etc/init.d/autossh start
                                                 }
                                         }
@@ -109,7 +109,7 @@ while true; do
                                 then
                                         if [ $BCK_RECOVER == 0 ]
                                         then
-                                                echo "A backup already exists! And time is right. Copying DB to the temp location"
+                                                echo "STATS: A backup already exists! And time is right. Copying DB to the temp location"
                                                 /etc/init.d/vnstat stop
                                                 killall vnstatd
                                                 rm -rf ${CURR_DIR}/*
@@ -130,7 +130,7 @@ while true; do
 						done
 						#Remove old backup host files#
                                                 for i in $IF_LIST; do                                              
-                                                        echo "Deleting old bck files from darkstat "$i             
+                                                        echo "STATS: Deleting old bck files from darkstat "$i             
                                                         rm -rf `ls -t1 $BCK_DIR/darkstat/*|grep "$i"|tail -n  +"$numbckfiles"`
                                                 done
 						###
@@ -144,16 +144,13 @@ while true; do
                                 then
                                         #Change of date - New day
                                         echo "STATS: Date was OK, now it is NOK"
-					echo "STATS: Date: "$date
-					echo "STATS: Dateref: "$dateref
-					echo "STATS: Olddate: "$olddate
-					echo "STATS: Olderdate: "$olderdate
+					echo "STATS: Date: $date Dateref: $dateref Olddate: $olddate Olderdate: $olderdate"
                                         getdateref=0
                                         unset dateref
                                         datewasok=0
                                         #Remove old backup host files#
                                         for i in $IF_LIST; do
-                                                echo "Deleting old bck files from darkstat "$i    
+                                                echo "STATS: Deleting old bck files from darkstat "$i    
                                                 rm -rf `ls -t1 BCK_DIR/darkstat/*|grep "$i"|tail -n  +"$numbckfiles"`
                                         done
 					#
@@ -165,18 +162,18 @@ while true; do
                                         olderdate="$olddate"
                                         unset olddate
                                         #####################################
-					echo "STATS: OLDERDATE: "$olderdate
+					#echo "STATS: OLDERDATE: "$olderdate
                                 else
-					echo "STATS: Date was not OK -1? "$date
+					#echo "STATS: Date was not OK 1? "$date
                                         /usr/sbin/ntpdate -b -s -u pool.ntp.org
                                 fi
-				echo "STATS: Date was not OK -2? "$date
+				#echo "STATS: Date was not OK 2? "$date
                         fi
 
                 fi
         else
                 grep "true" /etc/sshtunn/sshtunn.config > /dev/null && {
-                        echo "No internet connection detected, will not start tunnel"
+                        echo "SSHTunn: No internet connection detected, will not start tunnel"
                        [ -z "`pidof autossh`" ] || /etc/init.d/autossh stop
                 }
         fi
@@ -184,7 +181,7 @@ while true; do
         #Detect changes on networks to restart darkstat
         `ifconfig|grep -o 'addr:.*\  B'|sed 's/\(addr:\| \|B\)//g' > /tmp/nets_new.txt`
         diff -q "/tmp/nets.txt" "/tmp/nets_new.txt" |grep Files > /dev/null && {
-                echo "Change on nets detected!!!" 
+                echo "STATS: Change on nets detected!!!" 
                 mv /tmp/nets_new.txt /tmp/nets.txt
                 #Restarting darkstat
                 /etc/init.d/darkstat restart
